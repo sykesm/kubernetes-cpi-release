@@ -1,0 +1,3 @@
+[submodule "src/github.com/sykesm/kubernetes-cpi"]
+	path = src/github.com/sykesm/kubernetes-cpi
+	url = https://github.com/sykesm/kubernetes-cpi
