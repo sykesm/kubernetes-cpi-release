@@ -1,3 +1,21 @@
 [submodule "src/github.com/sykesm/kubernetes-cpi"]
 	path = src/github.com/sykesm/kubernetes-cpi
 	url = https://github.com/sykesm/kubernetes-cpi
+[submodule "src/github.com/onsi/ginkgo"]
+	path = src/github.com/onsi/ginkgo
+	url = https://github.com/onsi/ginkgo
+[submodule "src/github.com/onsi/gomega"]
+	path = src/github.com/onsi/gomega
+	url = https://github.com/onsi/gomega
+[submodule "src/gopkg.in/yaml.v2"]
+	path = src/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2
+[submodule "src/github.com/vito/gosub"]
+	path = src/github.com/vito/gosub
+	url = https://github.com/vito/gosub
+[submodule "src/k8s.io/client-go"]
+	path = src/k8s.io/client-go
+	url = https://github.com/kubernetes/client-go
+[submodule "src/github.com/cloudfoundry/bosh-agent"]
+	path = src/github.com/cloudfoundry/bosh-agent
+	url = https://github.com/cloudfoundry/bosh-agent

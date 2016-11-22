@@ -1,0 +1,21 @@
+#!/bin/bash
+set -eu
+
+GO_VERSION=1.7.3
+GO_ARCH=amd64
+
+case $(uname -s) in
+    Linux)
+        GO_SYSTEM="linux" ;;
+
+    Darwin)
+        GO_SYSTEM="darwin" ;;
+
+    *)
+        echo "Unsupported system"
+        exit 1
+        ;;
+esac
+
+tar -xzf golang/go${GO_VERSION}.${GO_SYSTEM}-${GO_ARCH}.tar.gz
+cp -a go/* ${BOSH_INSTALL_TARGET}

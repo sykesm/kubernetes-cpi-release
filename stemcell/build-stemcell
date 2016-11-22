@@ -1,0 +1,50 @@
+#!/bin/bash 
+
+set -e
+
+# # Get the latest stemcell information from bosh.io
+# # FIXME: Currently assumes versions are numbers that can be sorted
+# read stemcell_version stemcell_url <<<$(
+#     curl -s 'http://bosh.io/api/v1/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?all=1' |
+#     jq -r 'max_by(.version | tonumber) | .version + " " +.regular.url'
+# )
+
+stemcell_version=3312
+stemcell_url=https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent?v=${stemcell_version}
+
+# Local directory for build
+mkdir -p build
+
+# Build the agent
+GOOS=linux GOARCH=amd64 go build -o build/bosh-agent github.com/cloudfoundry/bosh-agent/main
+
+# Download the latest stemcell and extract
+wget --quiet -O - ${stemcell_url} | tar -C build -zx
+
+# Build the image and tag it with the stemcell version from bosh.io metadata
+mv build/image build/image.tgz
+docker build -t sykesm/kubernetes-stemcell:${stemcell_version} . && rm build/image.tgz
+
+# Tag the versioned image as latest
+docker tag sykesm/kubernetes-stemcell:${stemcell_version} sykesm/kubernetes-stemcell:latest
+
+# Create the stemcell archive
+touch build/image
+
+cat << MF_EOF > build/stemcell.MF
+name: bosh-kubernetes-ubuntu-trusty-go_agent
+version: "$stemcell_version"
+sha1: da39a3ee5e6b4b0d3255bfef95601890afd80709
+operating_system: ubuntu-trusty
+cloud_properties:
+  image: "sykesm/kubernetes-stemcell:$stemcell_version"
+MF_EOF
+
+# Delete the agent binary
+rm -f build/bosh-agent
+
+# Create the stemcell archive
+( cd build && tar -zcf ../bosh-stemcell-${stemcell_version}-kubernetes-ubuntu-trusty-go_agent.tgz * )
+
+# Cleanup
+rm -rf build

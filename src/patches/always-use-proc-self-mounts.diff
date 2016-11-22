@@ -1,0 +1,39 @@
+diff --git a/platform/disk/linux_disk_manager.go b/platform/disk/linux_disk_manager.go
+index f14f05e..c301007 100644
+--- a/platform/disk/linux_disk_manager.go
++++ b/platform/disk/linux_disk_manager.go
+@@ -31,17 +31,9 @@ func NewLinuxDiskManager(
+ 	var mountsSearcher MountsSearcher
+ 
+ 	// By default we want to use most reliable source of
+-	// mount information which is /proc/mounts
++	// mount information which is /proc/self/mounts
+ 	mountsSearcher = NewProcMountsSearcher(fs)
+ 
+-	// Bind mounting in a container (warden) will not allow
+-	// reliably determine which device backs a mount point,
+-	// so we use less reliable source of mount information:
+-	// the mount command which returns information from /etc/mtab.
+-	if bindMount {
+-		mountsSearcher = NewCmdMountsSearcher(runner)
+-	}
+-
+ 	mounter = NewLinuxMounter(runner, mountsSearcher, 1*time.Second)
+ 
+ 	if bindMount {
+diff --git a/platform/disk/proc_mounts_searcher.go b/platform/disk/proc_mounts_searcher.go
+index 1a2b4cc..174a029 100644
+--- a/platform/disk/proc_mounts_searcher.go
++++ b/platform/disk/proc_mounts_searcher.go
+@@ -18,9 +18,9 @@ func NewProcMountsSearcher(fs boshsys.FileSystem) MountsSearcher {
+ func (s procMountsSearcher) SearchMounts() ([]Mount, error) {
+ 	var mounts []Mount
+ 
+-	mountInfo, err := s.fs.ReadFileString("/proc/mounts")
++	mountInfo, err := s.fs.ReadFileString("/proc/self/mounts")
+ 	if err != nil {
+-		return mounts, bosherr.WrapError(err, "Reading /proc/mounts")
++		return mounts, bosherr.WrapError(err, "Reading /proc/self/mounts")
+ 	}
+ 
+ 	for _, mountEntry := range strings.Split(mountInfo, "\n") {

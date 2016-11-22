@@ -1,1 +1,9 @@
---- {}
+---
+golang/go1.7.3.darwin-amd64.tar.gz:
+  object_id: 4d98d685-a430-490c-8414-d0c5e7d7a74f
+  sha: 8975c9fb2b1a80b949d8b2882fa763aee395adb5
+  size: 82283353
+golang/go1.7.3.linux-amd64.tar.gz:
+  object_id: ff11e6cb-a6d3-43de-9ce9-ead7cfbd8d69
+  sha: ead40e884ad4d6512bcf7b3c7420dd7fa4a96140
+  size: 82565628

@@ -1,0 +1,6 @@
+---
+final_name: bosh-kubernetes-cpi
+blobstore:
+  provider: dav
+  options:
+    endpoint: https://blobs.go.dyndns.org

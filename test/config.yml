@@ -1,0 +1,85 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: "bosh"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: local-pv
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/local-pv/
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: agent-pv-claim
+  namespace: bosh
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: agent-foo
+  namespace: bosh
+data:
+  agent_settings: |-
+    {
+      "Platform": {
+        "Linux": {
+          "UseDefaultTmpDir": true,
+          "UsePreformattedPersistentDisk": true,
+          "SkipDiskSetup": true,
+          "BindMountPersistentDisk": true
+        }
+      },
+      "Infrastructure": {
+        "Settings": {
+          "Sources": [ { "Type": "File", "SettingsPath": "/var/vcap/bosh/kubernetes-cpi-agent-settings.json" } ],
+          "UseRegistry": true
+        }
+      }
+    }
+
+  # Temporarily hard coded while getting the agent to boot
+  infrastructure_settings: |-
+    {
+      "networks" : {
+        "default" : { "preconfigured" : true }
+      },
+      "agent_id" : "c676c399-2ff5-49dc-a329-f7ef517ffecd",
+      "vm" : {
+          "id" : "d6784895-c4c9-4532-637b-ff29c4664a14",
+          "name" : "d6784895-c4c9-4532-637b-ff29c4664a14"
+      },
+      "ntp" : [],
+      "env" : {
+          "bosh" : {
+            "password" : "$6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0"
+          }
+      },
+      "mbus" : "https://admin:adminpass@0.0.0.0:6868",
+      "blobstore" : {
+        "provider": "local",
+        "options": {
+          "blobstore_path": "/var/vcap/micro_bosh/data/cache"
+        }
+      },
+      "disks" : {
+        "persistent": { "not-implemented": "/mnt/persistent" }
+      }
+    }
+

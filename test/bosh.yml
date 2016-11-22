@@ -1,0 +1,219 @@
+---
+name: kube-test-bosh
+
+releases:
+- name: bosh
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=260
+  sha1: f8f086974d9769263078fb6cb7927655744dacbc
+- name: bosh-kubernetes-cpi
+  url: file:///Users/sykesm/workspace/kubernetes-cpi-release/dev_releases/bosh-kubernetes-cpi/bosh-kubernetes-cpi-0+dev.1.tgz
+  sha1: 224b88203ca749e49cf0be488c6d4c216c407838
+
+resource_pools:
+- name: minikube
+  network: default
+  stemcell:
+    url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
+    sha1: dbf3bbc6df4bf01effdd8a222f6374a2dd623cb9
+  cloud_properties:
+    cluster: *kubernetes
+    namespace: bosh
+
+disk_pools:
+- name: disks
+  disk_size: 40_000
+
+networks:
+- name: default
+  type: dynamic
+  dns:
+  - 10.0.80.11
+  - 10.0.80.12
+
+jobs:
+- name: bosh
+  instances: 1
+
+  templates:
+  - {name: nats, release: bosh}
+  - {name: postgres, release: bosh}
+  - {name: blobstore, release: bosh}
+  - {name: director, release: bosh}
+  - {name: health_monitor, release: bosh}
+  - {name: kubernetes_cpi, release: bosh-kubernetes-cpi}
+
+  resource_pool: minikube
+  persistent_disk_pool: disks
+
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+
+  properties:
+    nats:
+      address: 127.0.0.1
+      user: nats
+      password: nats-password
+
+    postgres: &bosh_postgres
+      user: postgres
+      password: postgres-password
+      host: 127.0.0.1
+      database: bosh
+      adapter: postgres
+
+    blobstore:
+      address: 127.0.0.1
+      port: 25250
+      provider: dav
+      director:
+        user: director
+        password: director-blobs-password
+      agent:
+        user: agent
+        password: agent-blobs-password
+
+    director:
+      address: 127.0.0.1
+      name: "Kubernetes Bosh"
+      cpi_job: kubernetes_cpi
+      db: *bosh_postgres
+      user_management:
+        provider: local
+        local:
+          users:
+          - name: admin
+            password: bosh-admin-password
+          - name: hm
+            password: bosh-hm-password
+
+    hm:
+      http:
+        user: hm
+        password: hm-http-password
+        port: 25923
+      director_account:
+        user: hm
+        password: bosh-hm-password
+      pagerduty_enabled: false
+      resurrector_enabled: false
+
+    agent:
+      mbus: "nats://nats:nats-password@127.0.0.1:4222"
+
+    ntp: &ntp
+    - 0.pool.ntp.org
+    - 1.pool.ntp.org
+
+cloud_provider:
+  template:
+    name: kubernetes_cpi
+    release: bosh-kubernetes-cpi
+
+  # The agent mbus is exposed by the CPI to bosh-init as a
+  # Kubernetes NodePort service. It's currently hard coded
+  # with the following spec to expost 6868 as 32068:
+  #
+  # Spec: v1.ServiceSpec{
+  # 	Type: v1.ServiceTypeNodePort,
+  # 	Ports: []v1.ServicePort{{
+  # 		NodePort: 32068,
+  # 		Port:     6868,
+  # 	}},
+  # 	ClusterIP: vip,
+  # 	Selector: map[string]string{
+  # 		"bosh.cloudfoundry.org/agent-id": agentID,
+  # 	},
+  # },
+  #
+  # The user and password should match what's used in
+  # properties.agent.mbus but the address needs to be the
+  # address of the kube node. This is temporary.
+  mbus: https://admin:adminpass@192.168.64.17:32068
+
+  properties:
+    agent:
+      # The address used here is the listen address for the
+      # agent. The port needs to match what is used in the
+      # NodePort service. The user and password should match
+      # what is used for cloud_provider.mbus
+      mbus: https://admin:adminpass@0.0.0.0:6868
+    blobstore:
+      provider: local
+      path: /var/vcap/micro_bosh/data/cache
+    ntp: *ntp
+
+meta:
+  # This information should come from the cluster config
+  kubernetes: &kubernetes
+    ca_cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIC5zCCAc+gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+      a3ViZUNBMB4XDTE2MTEwNzE0NDQxNVoXDTI2MTEwNTE0NDQxNVowFTETMBEGA1UE
+      AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAPT5
+      xL3rt3+1IPfpVIxzAczhxUJxwWTrQhwegaCyz8DPAIQcSyl7C70n2kFeOwsJhmkq
+      yy21U+Y+brAR8WnaV+EO+TzOEimVve+sJnGWKG7Al1cPgq9IN6lXUcaISiGjC6xF
+      jtiwfHXeZMYBXABxG8Wn1YcDHQ4F3bnbl7Ia/bPbIYxocmFE8BNz9Yr3Qyw4mF4W
+      pEnpHbQAFziFVfqURysUR1s8VZ3T82Hc6NzmyjiUAOFb2Xr479Gxq8ceVBQbcsQQ
+      9dNI2/t6tApA/a3AiqaWksIHPZauWhvihIkQlUh/5EcbVcROPAlpGbZwOzRbs1Yk
+      ckQmRCGnygJeK3MSXDcCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgKkMB0GA1UdJQQW
+      MBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+      DQEBCwUAA4IBAQATLrZAdjsbWqwvqOlDFeleXdFzdgwK7kWMqOQbwf37xYgxBDoF
+      XjwL5+Ukh07OPgKdO7P2GXZEhTq2iaBTxSADlvHM2GfslQorA0eIyI3NRmmGcCKh
+      m+pkrEZowLsBx2uEkwi3vAP9mjTjbn3RUvXiJkuKsRtbh7hKk0mpvwg3RPYvaR4N
+      e9xu3HMJ9O7orlkYnspfPOf9yn9CU4aTsQbnRsBkVQEvdj8RDrx5jBFYRwaeUawk
+      J9/6ew8cLyehtDgFllyikYnl2GCGiOJQ+Me0b9ffTTdo+swK336/zMo9bveobILV
+      vfy9KGwhLnVP6peBwFKShd0QSzzCcCgGjUnd
+      -----END CERTIFICATE-----
+    client_cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDWTCCAkGgAwIBAgIBAjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+      a3ViZUNBMB4XDTE2MTExNjAyMjA0MloXDTE3MTExNjAyMjA0MlowEzERMA8GA1UE
+      AxMIbWluaWt1YmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDGdl+/
+      SZ7KMtpWgXV8n+KMJ8sCLhYaXMM63jIEFTkN9e9d17y5zvPuPHEaxOtzUN7ysFhs
+      AXdG8lFvcOr1+/6ZQez2+EW9y7lHugai/pWTQnJxiNxmHH1HW9RzXNU/PwaIerlo
+      W4SqANIxE4tj9pGUvJgr+L99M6APutI/QMOmIcCK8vNAy4S4iHTT1SvDG4SLzqV0
+      yqotqijhZlkWpnRJxu7tjTjRYX8FemichC+X7H5DEbGNFYcQAEDntww0BmdtXA5Z
+      U3FO9dP3YDz+U93YCTT2hUcakB++mWJGCCJzks+NXszqnozTo2q/0SkwdfOEva6A
+      JNhX5s1PwP5KLpgVAgMBAAGjgbUwgbIwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQW
+      MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMHMGA1UdEQRsMGqC
+      JGt1YmVybmV0ZXMuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbIIWa3ViZXJuZXRl
+      cy5kZWZhdWx0LnN2Y4ISa3ViZXJuZXRlcy5kZWZhdWx0ggprdWJlcm5ldGVzhwTA
+      qEARhwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQDw69tuo8PO7vmxcYiKLHwhkGg/
+      88asku+HHYslD28JGLQSUi4+Tf0qkxvqx3sM/a3KXwx11xyiDuPI1tSt0ka/SUxk
+      yCInCCltkopZ2rOl3/7nLz8KHkJqMn2fFeyPntK15ZzX2pdq78epcPu8cJcKpJ/H
+      3bZMoK3t9MUYs7nm79SeenjLzFYRJDXG3BCpqf4kc70Ad3OTS6nrP3YEnvVlqJe6
+      l9K+bzW4l7jpHaITt7MAhYQeWngrfrI10E5ph6qsv7sXgkCKh5yDfiyRCVQReLhm
+      nLbKIzUeeGtB2w685lCfgQrsqImhuQomzXslFeNnUr/+E64ZGALvxjn9b6GK
+      -----END CERTIFICATE-----
+    client_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpAIBAAKCAQEAxnZfv0meyjLaVoF1fJ/ijCfLAi4WGlzDOt4yBBU5DfXvXde8
+      uc7z7jxxGsTrc1De8rBYbAF3RvJRb3Dq9fv+mUHs9vhFvcu5R7oGov6Vk0JycYjc
+      Zhx9R1vUc1zVPz8GiHq5aFuEqgDSMROLY/aRlLyYK/i/fTOgD7rSP0DDpiHAivLz
+      QMuEuIh009UrwxuEi86ldMqqLaoo4WZZFqZ0Scbu7Y040WF/BXponIQvl+x+QxGx
+      jRWHEABA57cMNAZnbVwOWVNxTvXT92A8/lPd2Ak09oVHGpAfvpliRggic5LPjV7M
+      6p6M06Nqv9EpMHXzhL2ugCTYV+bNT8D+Si6YFQIDAQABAoIBACtxeiAbc4D7hMPu
+      7tLrBOJ9S3kcsYXvzGS0gupV4vllXpKCSTO7U7ZQ0Ml1Vb0WdNdXNuPdpkiHfsAQ
+      Tb6u/Np7je26Bzo2wEYtOIqxg/iKURb9SJGpptraBTWDmsKPf1Sc2L05W18Dcv9/
+      McIeFVwjtIPbnb9Ab8dBtAhYmvtggSbN1sgADC1ZVJkgdb0MITuspjzmsSBVQkSa
+      HtMiNuGqeNZ5i08gyPf6W/7K98aZXP7r5Qfc5lTeJsvTCS1V/8Phi/RAaTKVe9x9
+      nXiQHIiycgJkEOyY8wk3TIdwa75kjkxZuMRHPfkNT0DJk0OjY+zdceHhwIUkgcZh
+      Y9wRijkCgYEA0qZ7PaSj4Jb/Nn0mqUfSkZ0RLb2j2UD1NCKlIxCuxPFTkYmCT35U
+      Z4WnVmMYyGcIVFIwa9b82Zd3DGGXLXZcvq8xgvstm7jEPXes5Il4A5YKHuRj4mYb
+      EjsLDWsOBtYNOlNRxBp3ZVsYvslmNDouFAAlvX2Ab80ZXxWZQ1oBFU8CgYEA8TAu
+      zarhOQm0UlEGHJjfsijqeTjv9gX308VHadJp2uOCD1I6D5ttc5B3vhV2kFAZYkoW
+      aieN4MvcsEuPqsU+W3EW4esLAXeGPDSDKmDYMVNS8ZTS2m6vzddQISDXAQxCuW9x
+      H4wX1sWbnmYcXjA6iHeK3aSbcXLWKHlpZPjca1sCgYEAmcmdU+WtFrxmWnuIDDI5
+      UsGe1wwKYQQBgCyC71Swo2ukHS6NCkgqiuGSx4jVgQlnlVfjrfdo5dqkuU9ONYyi
+      LTxuIzgJlhSQgGesu7R4//U8Mk1/drwgq3CboxIzTV5cjeZiXY8M99xH9pHGof6P
+      wV5SL0M+z2CnUznLiNZe0BUCgYBRESzqHCGPll9xu6IeQpQNwgrtq+GcA+2E1K5o
+      Nz01QXsZwz2YuVlUmp5k2bn8T6/4hYZ7L8hUYrFO4Fbtw1ZuTdivHt2YJKCN4+ii
+      eeKw0Zzzbl5g5QtaWKCqQeuCgqh6w6Z2QBRTMCBaYV/vmK5T6DpYvVcyDrNE72op
+      cixEOQKBgQC0el7QTc2ei0KGcMYFtldkrQYrMl6/ICDn8lleZI59Ffri6iypQtsA
+      QarqMQ9wBrwkB4juoN8Y2f98zKMJvzrp7o52fsjBdFLvxMV+QLYqmrrEektoeRDy
+      bBWvngDMuJzndG5sFjH7O6BfEJ8mK3whN7gNyU9vymT3FWY5IFXWxg==
+      -----END RSA PRIVATE KEY-----
+    server: https://192.168.64.17:8443

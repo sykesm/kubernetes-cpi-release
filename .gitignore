@@ -1,3 +1,6 @@
+/bin
+/pkg
+/src/github.com/codegangsta/
 config/dev.yml
 config/private.yml
 releases/*.tgz

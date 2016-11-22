@@ -1,0 +1,20 @@
+#!/bin/bash
+set -ex
+
+if [ -z "$BOSH_PACKAGES_DIR" ]; then
+	golang_pkg_dir=$(readlink -nf /var/vcap/packages/golang)
+else
+	golang_pkg_dir=$BOSH_PACKAGES_DIR/golang
+fi
+
+mkdir -p ${BOSH_INSTALL_TARGET}/src
+cp -a . ${BOSH_INSTALL_TARGET}/src
+export GOPATH=$BOSH_INSTALL_TARGET
+
+export GOROOT=${golang_pkg_dir}
+export PATH=$GOROOT/bin:$PATH
+
+go install github.com/sykesm/kubernetes-cpi/cmd/cpi
+
+# clean up source artifacts
+rm -rf ${BOSH_INSTALL_TARGET}/src ${BOSH_INSTALL_TARGET}/pkg
