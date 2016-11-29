@@ -6,6 +6,7 @@ dependencies:
 
 files:
   - github.com/sykesm/kubernetes-cpi/actions/*.go # gosub
+  - github.com/sykesm/kubernetes-cpi/agent/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cmd/cpi/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/config/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cpi/*.go # gosub

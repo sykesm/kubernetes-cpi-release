@@ -1,17 +1,19 @@
 {
   "Platform": {
     "Linux": {
-      "UseDefaultTmpDir": true,
+      "SkipDiskSetup": true,
       "UsePreformattedPersistentDisk": true,
-      "SkipDiskSetup": true
+      "UseDefaultTmpDir": true,
+      "BindMountPersistentDisk": true
     }
   },
   "Infrastructure": {
     "Settings": {
+      "UseRegistry": true,
       "Sources": [
         {
           "Type": "File",
-          "SettingsPath": "/var/vcap/bosh/kubernetes-cpi-agent-settings.json"
+          "SettingsPath": "/var/vcap/bosh/instance_settings.json"
         }
       ]
     }
