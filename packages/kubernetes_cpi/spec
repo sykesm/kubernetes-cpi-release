@@ -7,6 +7,7 @@ dependencies:
 files:
   - github.com/sykesm/kubernetes-cpi/actions/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cmd/cpi/*.go # gosub
+  - github.com/sykesm/kubernetes-cpi/config/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cpi/*.go # gosub
   - k8s.io/client-go/1.4/discovery/*.go # gosub
   - k8s.io/client-go/1.4/kubernetes/*.go # gosub
@@ -93,6 +94,7 @@ files:
   - k8s.io/client-go/1.4/pkg/util/flowcontrol/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/framer/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/hash/*.go # gosub
+  - k8s.io/client-go/1.4/pkg/util/homedir/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/integer/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/intstr/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/json/*.go # gosub
@@ -112,7 +114,11 @@ files:
   - k8s.io/client-go/1.4/pkg/watch/*.go # gosub
   - k8s.io/client-go/1.4/pkg/watch/versioned/*.go # gosub
   - k8s.io/client-go/1.4/rest/*.go # gosub
+  - k8s.io/client-go/1.4/tools/auth/*.go # gosub
+  - k8s.io/client-go/1.4/tools/clientcmd/*.go # gosub
   - k8s.io/client-go/1.4/tools/clientcmd/api/*.go # gosub
+  - k8s.io/client-go/1.4/tools/clientcmd/api/latest/*.go # gosub
+  - k8s.io/client-go/1.4/tools/clientcmd/api/v1/*.go # gosub
   - k8s.io/client-go/1.4/tools/metrics/*.go # gosub
   - k8s.io/client-go/1.4/transport/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/blang/semver/*.go # gosub
@@ -127,6 +133,7 @@ files:
   - k8s.io/client-go/1.4/vendor/github.com/gogo/protobuf/sortkeys/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/golang/glog/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/google/gofuzz/*.go # gosub
+  - k8s.io/client-go/1.4/vendor/github.com/imdario/mergo/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/juju/ratelimit/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/pborman/uuid/*.go # gosub
   - k8s.io/client-go/1.4/vendor/github.com/spf13/pflag/*.go # gosub
