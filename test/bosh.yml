@@ -10,7 +10,7 @@ releases:
   sha1: 224b88203ca749e49cf0be488c6d4c216c407838
 
 resource_pools:
-- name: minikube
+- name: minikube-director
   network: default
   stemcell:
     url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
@@ -26,9 +26,7 @@ networks:
 - name: default
   type: dynamic
   dns:
-  - 10.0.0.10
-  - 8.8.8.8
-  - 8.8.4.4
+  - 10.0.0.10 # kube dns
 
 jobs:
 - name: bosh
@@ -42,7 +40,7 @@ jobs:
   - {name: health_monitor, release: bosh}
   - {name: kubernetes_cpi, release: bosh-kubernetes-cpi}
 
-  resource_pool: minikube
+  resource_pool: minikube-director
   persistent_disk_pool: disks
 
   networks:
@@ -119,7 +117,7 @@ cloud_provider:
   #
   # The agent mbus is exposed by the CPI to bosh-init as a
   # Kubernetes NodePort service. It's currently hard coded
-  # with the following spec to expost 6868 as 32068:
+  # with the following spec to expose 6868 as 32068:
   #
   # Spec: v1.ServiceSpec{
   # 	Type: v1.ServiceTypeNodePort,
@@ -127,7 +125,6 @@ cloud_provider:
   # 		NodePort: 32068,
   # 		Port:     6868,
   # 	}},
-  # 	ClusterIP: vip,
   # 	Selector: map[string]string{
   # 		"bosh.cloudfoundry.org/agent-id": agentID,
   # 	},
@@ -153,7 +150,7 @@ cloud_provider:
     ntp: *ntp
 
 meta:
-  # This is a non-standard serialization clientcmdapi.Config
+  # This is a non-standard serialization of clientcmdapi.Config
   kubeconfig: &kubeconfig
     clusters:
       minikube:
