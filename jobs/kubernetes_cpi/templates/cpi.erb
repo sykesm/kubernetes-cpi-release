@@ -5,7 +5,7 @@ set -ex
 pkgs_dir=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
 jobs_dir=${BOSH_JOBS_DIR:-/var/vcap/jobs}
 
-cmd="$pkgs_dir/kubernetes_cpi/bin/cpi -kubeConfig=${jobs_dir}/kubernetes_cpi/config/cpi.json"
+cmd="$pkgs_dir/kubernetes_cpi/bin/cpi -kubeConfig=${jobs_dir}/kubernetes_cpi/config/cpi.json -agentConfig=${jobs_dir}/kubernetes_cpi/config/agent.json"
 
 # If this cpi release is used with bosh-micro
 # there is no guarantee that /var/vcap/sys/log is present

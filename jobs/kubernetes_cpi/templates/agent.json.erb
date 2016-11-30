@@ -1,0 +1,17 @@
+<%=
+  blobstore_options = p("blobstore").reject { |k| k == "provider" }
+  if p("blobstore.provider") == "local"
+    blobstore_options = { "blobstore_path" => blobstore_options["path"] }
+  end
+
+  agent_config = {
+    "blobstore" => {
+      "provider" => p("blobstore.provider"),
+      "options" => blobstore_options,
+    },
+    "mbus" => p("agent.mbus"),
+    "ntp" => p("ntp"),
+  }
+
+  JSON.dump(agent_config)
+%>
