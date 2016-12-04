@@ -1,0 +1,61 @@
+---
+name: concourse
+
+director_uuid: c3c2ca21-41dc-4ffb-9a01-05c22a184170
+
+releases:
+- name: concourse
+  version: latest
+- name: garden-runc
+  version: latest
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+- name: web
+  instances: 1
+  vm_type: concourse
+  stemcell: trusty
+  networks:
+  - name: dynamic
+  persistent_disk_type: small
+  jobs:
+  - name: postgresql
+    release: concourse
+    properties:
+      databases:
+      - name: atc
+        role: pgadmin
+        password: pgpassword
+  - name: atc
+    release: concourse
+    properties:
+      external_url: http://ci.example.com
+      basic_auth_username: admin
+      basic_auth_password: admin
+      postgresql_database: atc
+  - name: tsa
+    release: concourse
+    properties: {}
+  - name: groundcrew
+    release: concourse
+    properties: {}
+  - name: baggageclaim
+    release: concourse
+    properties: {}
+  - name: garden
+    release: garden-runc
+    properties:
+      garden:
+        listen_network: tcp
+        listen_address: 0.0.0.0:7777
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000

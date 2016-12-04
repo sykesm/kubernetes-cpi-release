@@ -1,0 +1,24 @@
+---
+vm_types:
+- name: concourse
+  cloud_properties:
+    context: minikube
+- name: concourse-compilation
+  cloud_properties:
+    context: minikube
+
+disk_types:
+- name: small
+  disk_size: 50_000
+
+networks:
+- name: dynamic
+  type: dynamic
+  dns:
+  - 10.0.0.10 # kube dns
+
+compilation:
+  workers: 1
+  reuse_compilation_vms: true
+  vm_type: concourse-compilation
+  network: dynamic
