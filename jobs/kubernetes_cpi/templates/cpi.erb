@@ -10,7 +10,7 @@ cmd="$pkgs_dir/kubernetes_cpi/bin/cpi -kubeConfig=${jobs_dir}/kubernetes_cpi/con
 # If this cpi release is used with bosh-micro
 # there is no guarantee that /var/vcap/sys/log is present
 if [ -d /var/vcap/sys/log ]; then
-  exec $cmd 2>>/var/vcap/sys/log/softlayer_cpi/cpi.log <&0
+  exec $cmd 2>>/var/vcap/sys/log/kubernetes_cpi/cpi.log <&0
 else
   exec $cmd <&0
 fi

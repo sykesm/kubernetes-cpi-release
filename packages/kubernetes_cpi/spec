@@ -10,6 +10,7 @@ files:
   - github.com/sykesm/kubernetes-cpi/cmd/cpi/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/config/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cpi/*.go # gosub
+  - github.com/sykesm/kubernetes-cpi/kubecluster/*.go # gosub
   - k8s.io/client-go/1.4/discovery/*.go # gosub
   - k8s.io/client-go/1.4/kubernetes/*.go # gosub
   - k8s.io/client-go/1.4/kubernetes/typed/apps/v1alpha1/*.go # gosub
@@ -85,6 +86,7 @@ files:
   - k8s.io/client-go/1.4/pkg/runtime/serializer/versioning/*.go # gosub
   - k8s.io/client-go/1.4/pkg/security/apparmor/*.go # gosub
   - k8s.io/client-go/1.4/pkg/selection/*.go # gosub
+  - k8s.io/client-go/1.4/pkg/third_party/forked/golang/json/*.go # gosub
   - k8s.io/client-go/1.4/pkg/third_party/forked/golang/reflect/*.go # gosub
   - k8s.io/client-go/1.4/pkg/types/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/*.go # gosub
@@ -106,6 +108,7 @@ files:
   - k8s.io/client-go/1.4/pkg/util/rand/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/runtime/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/sets/*.go # gosub
+  - k8s.io/client-go/1.4/pkg/util/strategicpatch/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/uuid/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/validation/*.go # gosub
   - k8s.io/client-go/1.4/pkg/util/validation/field/*.go # gosub
