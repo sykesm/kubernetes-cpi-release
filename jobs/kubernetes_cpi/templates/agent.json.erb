@@ -1,16 +1,25 @@
 <%=
-  blobstore_options = p("blobstore").reject { |k| k == "provider" }
-  if p("blobstore.provider") == "local"
-    blobstore_options = { "blobstore_path" => blobstore_options["path"] }
+  blobstore_options = p('blobstore').reject { |k| k == 'provider' }
+  case p('blobstore.provider')
+  when 'local'
+    blobstore_options = {
+      'blobstore_path' => blobstore_options['path'],
+    }
+  when 'dav'
+    blobstore_options = {
+      'endpoint' => "http://#{p('blobstore.address')}:#{p('blobstore.port')}",
+      'user' => p('blobstore.agent.user'),
+      'password' => p('blobstore.agent.password')
+    }
   end
 
   agent_config = {
-    "blobstore" => {
-      "provider" => p("blobstore.provider"),
-      "options" => blobstore_options,
+    'blobstore' => {
+      'provider' => p('blobstore.provider'),
+      'options' => blobstore_options,
     },
-    "mbus" => p("agent.mbus"),
-    "ntp" => p("ntp"),
+    'mbus' => p('agent.mbus'),
+    'ntp' => p('ntp'),
   }
 
   JSON.dump(agent_config)
