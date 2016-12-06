@@ -29,20 +29,3 @@ spec:
   resources:
     requests:
       storage: 2Gi
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: bosh-director
-  namespace: bosh
-spec:
-  selector:
-    bosh.cloudfoundry.org/deployment: kube-test-bosh
-    bosh.cloudfoundry.org/director: bosh-init
-    bosh.cloudfoundry.org/job: bosh
-    bosh.cloudfoundry.org/index: "0"
-  type: NodePort
-  ports:
-  - nodePort: 32067
-    port: 25555
-    protocol: TCP

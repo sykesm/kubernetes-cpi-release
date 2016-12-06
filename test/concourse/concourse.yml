@@ -1,7 +1,7 @@
 ---
 name: concourse
 
-director_uuid: c3c2ca21-41dc-4ffb-9a01-05c22a184170
+director_uuid: <%= `bosh target minikube > /dev/null 2>&1 && bosh status --uuid` %>
 
 releases:
 - name: concourse

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+bosh -d concourse.yml ssh \
+    --gateway_host $(minikube ip) \
+    --gateway_user docker \
+    --gateway_identity_file ~/.minikube/machines/minikube/id_rsa \
+    ${@}

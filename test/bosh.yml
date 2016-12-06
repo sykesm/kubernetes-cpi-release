@@ -1,5 +1,5 @@
 ---
-name: kube-test-bosh
+name: minikube-bosh
 
 releases:
 - name: bosh
@@ -11,6 +11,34 @@ releases:
 
 resource_pools:
 - name: minikube-director
+  network: default
+  stemcell:
+    url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
+    sha1: dbf3bbc6df4bf01effdd8a222f6374a2dd623cb9
+  cloud_properties:
+    context: minikube
+    services:
+    - name: director
+      type: NodePort
+      ports:
+      - name: agent
+        protocol: TCP
+        port: 6868
+        node_port: 32068
+      - name: director
+        protocol: TCP
+        port: 25555
+        node_port: 32067
+    - name: blobstore
+      ports:
+      - port: 25250
+        protocol: TCP
+    - name: nats
+      ports:
+      - port: 4222
+        protocol: TCP
+
+- name: minikube
   network: default
   stemcell:
     url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
@@ -63,7 +91,7 @@ jobs:
       adapter: postgres
 
     blobstore:
-      address: 127.0.0.1
+      address: blobstore.bosh.svc.cluster.local
       port: 25250
       provider: dav
       director:
@@ -75,7 +103,7 @@ jobs:
 
     director:
       address: 127.0.0.1
-      name: "Kubernetes Bosh"
+      name: minikube
       cpi_job: kubernetes_cpi
       db: *bosh_postgres
       user_management:
@@ -99,11 +127,9 @@ jobs:
       resurrector_enabled: false
 
     agent:
-      mbus: "nats://nats:nats-password@127.0.0.1:4222"
+      mbus: "nats://nats:nats-password@nats.bosh.svc.cluster.local:4222"
 
-    ntp: &ntp
-    - 0.pool.ntp.org
-    - 1.pool.ntp.org
+    ntp: &ntp []
 
     kubeconfig: *kubeconfig
 
@@ -133,7 +159,7 @@ cloud_provider:
   # The user and password should match what's used in
   # properties.agent.mbus but the address needs to be the
   # address of the kube node. This is temporary.
-  mbus: https://admin:adminpass@192.168.64.17:32068
+  mbus: https://admin:adminpass@192.168.64.18:32068
 
   # These properties are used to render the CPI job templates
   properties:
@@ -173,7 +199,7 @@ meta:
           J9/6ew8cLyehtDgFllyikYnl2GCGiOJQ+Me0b9ffTTdo+swK336/zMo9bveobILV
           vfy9KGwhLnVP6peBwFKShd0QSzzCcCgGjUnd
           -----END CERTIFICATE-----
-        server: https://192.168.64.17:8443
+        server: https://192.168.64.18:8443
     contexts:
       minikube:
         cluster: minikube
@@ -185,7 +211,7 @@ meta:
         client_certificate_data: |
           -----BEGIN CERTIFICATE-----
           MIIDWTCCAkGgAwIBAgIBAjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
-          a3ViZUNBMB4XDTE2MTEyOTE4MTcxNVoXDTE3MTEyOTE4MTcxNVowEzERMA8GA1UE
+          a3ViZUNBMB4XDTE2MTIwNTIxNTE0OVoXDTE3MTIwNTIxNTE0OVowEzERMA8GA1UE
           AxMIbWluaWt1YmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDGdl+/
           SZ7KMtpWgXV8n+KMJ8sCLhYaXMM63jIEFTkN9e9d17y5zvPuPHEaxOtzUN7ysFhs
           AXdG8lFvcOr1+/6ZQez2+EW9y7lHugai/pWTQnJxiNxmHH1HW9RzXNU/PwaIerlo
@@ -196,12 +222,12 @@ meta:
           MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMHMGA1UdEQRsMGqC
           JGt1YmVybmV0ZXMuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbIIWa3ViZXJuZXRl
           cy5kZWZhdWx0LnN2Y4ISa3ViZXJuZXRlcy5kZWZhdWx0ggprdWJlcm5ldGVzhwTA
-          qEARhwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQBbzAslaPjXNs9TgFhPZP8mi0Bo
-          J6p7CClAfjvvH5DFX+awmZ4RcD1uO1Y4zmSZLseqwitYSYuxHwQJZrI2ghaIkYnF
-          lnjjtAYdZpjOq/G3YoC1PMXn4wy+4VjqQS0Vaxf0gztEXCCFc4fkhndJpVkpT09Z
-          yfUEFiuBBSYblo8++q3joTTTlDhJmRyNJt2yZq5OjxRbUo45ccyqqj0UoemN/nnt
-          9qFAk/vIWKKM90JWOhV491w5W/CE4AkXtiFsXWRP4p1oox+k2hhXmlwvpW8XNNFx
-          VnFchvcJdGCA0Wv0mWiqQBzdLCGsf+WhAEY8lshgBG6EuJM54MlbFzwsW7Y3
+          qEAShwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQBvJEuDN+XsxBBed8qvEei2/zKg
+          2Fj9V70FrpGIdC+T/GEa/YyCuynj2tmta/43VaEBBTQJBLLzkwTJEMI6IpHfV6Ki
+          i3NiLgDBaSsjz/ePPun99e74SuEqjI8uugee4R6u9xaOcRLdskgGwVtF86yBXvn6
+          dldk835SI4G3LT/XBp8Mjm2Noy7n5SzUZiEPQ6cXhbFP/ldnN9WDZKpLaQDgYNQj
+          uEZuCfYFNxaT9WATjT4dlidDxj1/GW5eETQYEjf+87jikpUNLIvI+42cczOpvSkS
+          hwlCedJGltl9qzJCCtXtHXN1HbCbR2agEzWr8kUgj/e3GTA5OcyShXh5I/L7
           -----END CERTIFICATE-----
         client_key_data: |
           -----BEGIN RSA PRIVATE KEY-----
