@@ -9,12 +9,13 @@ vm_types:
 
 disk_types:
 - name: small
-  disk_size: 50_000
+  disk_size: 4_000
 
 networks:
 - name: dynamic
   type: dynamic
   dns:
+  - 10.0.0.11 # bosh dns
   - 10.0.0.10 # kube dns
 
 compilation:

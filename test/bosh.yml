@@ -7,14 +7,12 @@ releases:
   sha1: f8f086974d9769263078fb6cb7927655744dacbc
 - name: bosh-kubernetes-cpi
   url: file:///Users/sykesm/workspace/kubernetes-cpi-release/dev_releases/bosh-kubernetes-cpi/bosh-kubernetes-cpi-0+dev.1.tgz
-  sha1: 224b88203ca749e49cf0be488c6d4c216c407838
 
 resource_pools:
 - name: minikube-director
   network: default
   stemcell:
     url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
-    sha1: dbf3bbc6df4bf01effdd8a222f6374a2dd623cb9
   cloud_properties:
     context: minikube
     services:
@@ -33,6 +31,15 @@ resource_pools:
       ports:
       - port: 25250
         protocol: TCP
+    - name: bosh-dns
+      cluster_ip: 10.0.0.11
+      ports:
+      - port: 53
+        protocol: TCP
+        name: dns-tcp
+      - port: 53
+        protocol: UDP
+        name: dns-udp
     - name: nats
       ports:
       - port: 4222
@@ -42,19 +49,21 @@ resource_pools:
   network: default
   stemcell:
     url: file:///Users/sykesm/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
-    sha1: dbf3bbc6df4bf01effdd8a222f6374a2dd623cb9
   cloud_properties:
     context: minikube
 
 disk_pools:
 - name: disks
-  disk_size: 40_000
+  disk_size: 4_000
+  cloud_properties:
+    context: minikube
 
 networks:
 - name: default
   type: dynamic
   dns:
   - 10.0.0.10 # kube dns
+  - 10.0.0.11 # bosh dns
 
 jobs:
 - name: bosh
@@ -66,6 +75,7 @@ jobs:
   - {name: blobstore, release: bosh}
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
+  - {name: powerdns, release: bosh}
   - {name: kubernetes_cpi, release: bosh-kubernetes-cpi}
 
   resource_pool: minikube-director
@@ -115,6 +125,11 @@ jobs:
           - name: hm
             password: bosh-hm-password
 
+    dns:
+      address: 127.0.0.1
+      db: *bosh_postgres
+      domain_name: bosh
+
     hm:
       http:
         user: hm
@@ -129,6 +144,7 @@ jobs:
     agent:
       mbus: "nats://nats:nats-password@nats.bosh.svc.cluster.local:4222"
 
+    # containers inherit the clock from the host
     ntp: &ntp []
 
     kubeconfig: *kubeconfig
@@ -211,7 +227,7 @@ meta:
         client_certificate_data: |
           -----BEGIN CERTIFICATE-----
           MIIDWTCCAkGgAwIBAgIBAjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
-          a3ViZUNBMB4XDTE2MTIwNTIxNTE0OVoXDTE3MTIwNTIxNTE0OVowEzERMA8GA1UE
+          a3ViZUNBMB4XDTE2MTEyOTE4MTcxNVoXDTE3MTEyOTE4MTcxNVowEzERMA8GA1UE
           AxMIbWluaWt1YmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDGdl+/
           SZ7KMtpWgXV8n+KMJ8sCLhYaXMM63jIEFTkN9e9d17y5zvPuPHEaxOtzUN7ysFhs
           AXdG8lFvcOr1+/6ZQez2+EW9y7lHugai/pWTQnJxiNxmHH1HW9RzXNU/PwaIerlo
@@ -222,12 +238,12 @@ meta:
           MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMHMGA1UdEQRsMGqC
           JGt1YmVybmV0ZXMuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbIIWa3ViZXJuZXRl
           cy5kZWZhdWx0LnN2Y4ISa3ViZXJuZXRlcy5kZWZhdWx0ggprdWJlcm5ldGVzhwTA
-          qEAShwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQBvJEuDN+XsxBBed8qvEei2/zKg
-          2Fj9V70FrpGIdC+T/GEa/YyCuynj2tmta/43VaEBBTQJBLLzkwTJEMI6IpHfV6Ki
-          i3NiLgDBaSsjz/ePPun99e74SuEqjI8uugee4R6u9xaOcRLdskgGwVtF86yBXvn6
-          dldk835SI4G3LT/XBp8Mjm2Noy7n5SzUZiEPQ6cXhbFP/ldnN9WDZKpLaQDgYNQj
-          uEZuCfYFNxaT9WATjT4dlidDxj1/GW5eETQYEjf+87jikpUNLIvI+42cczOpvSkS
-          hwlCedJGltl9qzJCCtXtHXN1HbCbR2agEzWr8kUgj/e3GTA5OcyShXh5I/L7
+          qEARhwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQBbzAslaPjXNs9TgFhPZP8mi0Bo
+          J6p7CClAfjvvH5DFX+awmZ4RcD1uO1Y4zmSZLseqwitYSYuxHwQJZrI2ghaIkYnF
+          lnjjtAYdZpjOq/G3YoC1PMXn4wy+4VjqQS0Vaxf0gztEXCCFc4fkhndJpVkpT09Z
+          yfUEFiuBBSYblo8++q3joTTTlDhJmRyNJt2yZq5OjxRbUo45ccyqqj0UoemN/nnt
+          9qFAk/vIWKKM90JWOhV491w5W/CE4AkXtiFsXWRP4p1oox+k2hhXmlwvpW8XNNFx
+          VnFchvcJdGCA0Wv0mWiqQBzdLCGsf+WhAEY8lshgBG6EuJM54MlbFzwsW7Y3
           -----END CERTIFICATE-----
         client_key_data: |
           -----BEGIN RSA PRIVATE KEY-----

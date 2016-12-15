@@ -7,7 +7,7 @@ metadata:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: local-pv
+  name: pv-0001
   namespace: bosh
 spec:
   capacity:
@@ -16,16 +16,200 @@ spec:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Recycle
   hostPath:
-    path: /data/local-pv/
+    path: /data/pv-0001/
 ---
-kind: PersistentVolumeClaim
+kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: agent-pv-claim
+  name: pv-0002
   namespace: bosh
 spec:
+  capacity:
+    storage: 5Gi
   accessModes:
   - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0002/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0003
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0003/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0004
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0004/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0005
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0005/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0006
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0006/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0007
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0007/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0008
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0008/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-0009
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0009/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000a
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000a/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000b
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000b/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000c
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000c/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000d
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000d/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000e
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000e/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-000f
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-000f/

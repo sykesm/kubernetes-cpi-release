@@ -5,6 +5,8 @@ dependencies:
 - golang
 
 files:
+  - code.cloudfoundry.org/clock/*.go # gosub
+  - github.com/nu7hatch/gouuid/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/actions/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/agent/*.go # gosub
   - github.com/sykesm/kubernetes-cpi/cmd/cpi/*.go # gosub
