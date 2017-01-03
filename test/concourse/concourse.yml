@@ -52,6 +52,7 @@ instance_groups:
       garden:
         listen_network: tcp
         listen_address: 0.0.0.0:7777
+        apparmor_profile: ""
 
 update:
   canaries: 1

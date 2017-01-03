@@ -175,7 +175,7 @@ cloud_provider:
   # The user and password should match what's used in
   # properties.agent.mbus but the address needs to be the
   # address of the kube node. This is temporary.
-  mbus: https://admin:adminpass@192.168.64.18:32068
+  mbus: https://admin:adminpass@192.168.64.20:32068
 
   # These properties are used to render the CPI job templates
   properties:
@@ -215,7 +215,7 @@ meta:
           J9/6ew8cLyehtDgFllyikYnl2GCGiOJQ+Me0b9ffTTdo+swK336/zMo9bveobILV
           vfy9KGwhLnVP6peBwFKShd0QSzzCcCgGjUnd
           -----END CERTIFICATE-----
-        server: https://192.168.64.18:8443
+        server: https://192.168.64.20:8443
     contexts:
       minikube:
         cluster: minikube
