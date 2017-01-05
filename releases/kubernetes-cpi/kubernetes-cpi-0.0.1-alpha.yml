@@ -1,0 +1,22 @@
+---
+packages:
+- name: golang
+  version: bedb2bd0f88ce8531017f11f20185015261f68e6
+  fingerprint: bedb2bd0f88ce8531017f11f20185015261f68e6
+  sha1: 8ce19a775e7313823a325ca55b68d74df1cd263e
+  dependencies: []
+- name: kubernetes_cpi
+  version: 13d6421d9980c1d2f8c5be6d42176c505ba8ce27
+  fingerprint: 13d6421d9980c1d2f8c5be6d42176c505ba8ce27
+  sha1: 21259725e2fda36228493a45a3e1a5008d039b43
+  dependencies:
+  - golang
+jobs:
+- name: kubernetes_cpi
+  version: 4e4af8de7baf3747aa9c0a4088607154c240b17f
+  fingerprint: 4e4af8de7baf3747aa9c0a4088607154c240b17f
+  sha1: adbf26c2ee9a2160d69e184cc324c214213126aa
+commit_hash: eb00e589
+uncommitted_changes: true
+name: kubernetes-cpi
+version: 0.0.1-alpha

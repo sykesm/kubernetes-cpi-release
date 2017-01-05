@@ -16,13 +16,16 @@ resource_pools:
   cloud_properties:
     context: minikube
     services:
-    - name: director
+    - name: agent
       type: NodePort
       ports:
       - name: agent
         protocol: TCP
         port: 6868
         node_port: 32068
+    - name: director
+      type: NodePort
+      ports:
       - name: director
         protocol: TCP
         port: 25555

@@ -28,8 +28,8 @@ releases:
   url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=260
   sha1: f8f086974d9769263078fb6cb7927655744dacbc
 - name: kubernetes-cpi
-  url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v0.0.1-alpha/kubernetes-cpi-release-0.0.1-alpha.tgz
-  sha1: 016292fda95a2e3ec961da1f73dee02efe34a7c8
+  url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v0.0.1-alpha/kubernetes-cpi-0.0.1-alpha.tgz
+  sha1: 78f9abdd9119860bc3dd1597ca082a3775d3369d
 
 resource_pools:
 - name: minikube-director
@@ -40,13 +40,16 @@ resource_pools:
   cloud_properties:
     context: minikube
     services:
-    - name: director
+    - name: agent
       type: NodePort
       ports:
       - name: agent
         protocol: TCP
         port: 6868
         node_port: ${AGENT_NODEPORT}
+    - name: director
+      type: NodePort
+      ports:
       - name: director
         protocol: TCP
         port: 25555
