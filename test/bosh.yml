@@ -5,8 +5,8 @@ releases:
 - name: bosh
   url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=260
   sha1: f8f086974d9769263078fb6cb7927655744dacbc
-- name: bosh-kubernetes-cpi
-  url: file:///Users/sykesm/workspace/kubernetes-cpi-release/dev_releases/bosh-kubernetes-cpi/bosh-kubernetes-cpi-0+dev.1.tgz
+- name: kubernetes-cpi
+  url: file:///Users/sykesm/workspace/kubernetes-cpi-release/dev_releases/kubernetes-cpi/kubernetes-cpi-0+dev.1.tgz
 
 resource_pools:
 - name: minikube-director
@@ -76,7 +76,7 @@ jobs:
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
   - {name: powerdns, release: bosh}
-  - {name: kubernetes_cpi, release: bosh-kubernetes-cpi}
+  - {name: kubernetes_cpi, release: kubernetes-cpi}
 
   resource_pool: minikube-director
   persistent_disk_pool: disks
@@ -152,7 +152,7 @@ jobs:
 cloud_provider:
   template:
     name: kubernetes_cpi
-    release: bosh-kubernetes-cpi
+    release: kubernetes-cpi
 
   # This is the URL that bosh-init uses to communicate
   # with the agent on the VM that is being created.
