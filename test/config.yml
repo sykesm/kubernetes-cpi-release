@@ -7,6 +7,20 @@ metadata:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
+  name: pv-0000
+  namespace: bosh
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/pv-0000/
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
   name: pv-0001
   namespace: bosh
 spec:
