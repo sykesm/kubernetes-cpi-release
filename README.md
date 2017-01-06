@@ -12,6 +12,7 @@ packaged software on Kubernetes nodes.
 * simple bosh releases (like [concourse][concourse]) can be deployed but are
   not far enough along to run
 
+See [issues](#Issues) for detailed information.
 
 ## Mapping BOSH to Kubernetes
 
