@@ -12,7 +12,7 @@ data:
   cni_network_config: |-
     {
         "name": "k8s-pod-network",
-        "type": "calico",
+        "type": "calico-wrapper",
         "etcd_endpoints": "__ETCD_ENDPOINTS__",
         "log_level": "info",
         "ipam": {
@@ -34,7 +34,7 @@ data:
       apiVersion: v1
       kind: ipPool
       metadata:
-        cidr: 172.18.0.0/16
+        cidr: 10.244.0.0/16
       spec:
         ipip:
           enabled: false
@@ -120,6 +120,14 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+        # This container installs the Calico CNI wrapper binary on each node
+        - name: install-cni-wrapper
+          image: sykesm/calico-wrapper:v0.0.1-alpha
+          command: ["/install.sh"]
+          env:
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
       volumes:
         # Used by calico/node.
         - name: lib-modules

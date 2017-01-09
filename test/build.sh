@@ -4,7 +4,7 @@ set -x
 kubectl delete namespace bosh
 
 rm -rf ../dev_releases/kubernetes-cpi/*.{yml,tgz}
-rm -rf ./bosh-state.json ~/.bosh_init/installations/*
+rm -rf ./*-state.json ~/.bosh_init/installations/*
 (
   cd ..
   scripts/sync-package-specs
