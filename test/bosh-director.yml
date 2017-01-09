@@ -1,0 +1,273 @@
+---
+name: minikube-bosh
+
+releases:
+- name: bosh
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=260
+  sha1: f8f086974d9769263078fb6cb7927655744dacbc
+- name: kubernetes-cpi
+  url: file:///Users/cfdojo/workspace/kubernetes-cpi-release/dev_releases/kubernetes-cpi/kubernetes-cpi-0.0.1-alpha+dev.3.tgz
+
+resource_pools:
+- name: minikube-director
+  network: default
+  stemcell:
+    url: file:///Users/cfdojo/workspace/kubernetes-cpi-release/stemcell/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
+  cloud_properties:
+    context: minikube
+    services:
+    - name: agent
+      type: NodePort
+      ports:
+      - name: agent
+        protocol: TCP
+        port: 6868
+        node_port: 32068
+    - name: director
+      type: NodePort
+      ports:
+      - name: director
+        protocol: TCP
+        port: 25555
+        node_port: 32067
+    - name: blobstore
+      ports:
+      - port: 25250
+        protocol: TCP
+    - name: bosh-dns
+      cluster_ip: 10.0.0.11
+      ports:
+      - port: 53
+        protocol: TCP
+        name: dns-tcp
+      - port: 53
+        protocol: UDP
+        name: dns-udp
+    - name: nats
+      ports:
+      - port: 4222
+        protocol: TCP
+
+disk_pools:
+- name: disks
+  disk_size: 4_000
+  cloud_properties:
+    context: minikube
+
+networks:
+- name: default
+  type: manual 
+  subnets:
+  - range: 172.18.254.2/24
+    gateway: 172.18.254.1 # irrelevant
+    dns:
+    - 10.0.0.10 # kube dns
+    - 10.0.0.11 # bosh dns
+
+jobs:
+- name: bosh
+  instances: 1
+
+  templates:
+  - {name: nats, release: bosh}
+  - {name: postgres, release: bosh}
+  - {name: blobstore, release: bosh}
+  - {name: director, release: bosh}
+  - {name: health_monitor, release: bosh}
+  - {name: powerdns, release: bosh}
+  - {name: kubernetes_cpi, release: kubernetes-cpi}
+
+  resource_pool: minikube-director
+  persistent_disk_pool: disks
+
+  networks:
+  - name: default
+    static_ips:
+    - 172.18.254.1
+
+  properties:
+    nats:
+      address: 127.0.0.1
+      user: nats
+      password: nats-password
+
+    postgres: &bosh_postgres
+      user: postgres
+      password: postgres-password
+      host: 127.0.0.1
+      database: bosh
+      adapter: postgres
+
+    blobstore:
+      address: blobstore.bosh.svc.cluster.local
+      port: 25250
+      provider: dav
+      director:
+        user: director
+        password: director-blobs-password
+      agent:
+        user: agent
+        password: agent-blobs-password
+
+    director:
+      address: 127.0.0.1
+      name: minikube
+      cpi_job: kubernetes_cpi
+      db: *bosh_postgres
+      user_management:
+        provider: local
+        local:
+          users:
+          - name: admin
+            password: bosh-admin-password
+          - name: hm
+            password: bosh-hm-password
+
+    dns:
+      address: 127.0.0.1
+      db: *bosh_postgres
+      domain_name: bosh
+
+    hm:
+      http:
+        user: hm
+        password: hm-http-password
+        port: 25923
+      director_account:
+        user: hm
+        password: bosh-hm-password
+      pagerduty_enabled: false
+      resurrector_enabled: false
+
+    agent:
+      mbus: "nats://nats:nats-password@nats.bosh.svc.cluster.local:4222"
+
+    # containers inherit the clock from the host
+    ntp: &ntp []
+
+    kubeconfig: *kubeconfig
+
+cloud_provider:
+  template:
+    name: kubernetes_cpi
+    release: kubernetes-cpi
+
+  # This is the URL that bosh-init uses to communicate
+  # with the agent on the VM that is being created.
+  #
+  # The agent mbus is exposed by the CPI to bosh-init as a
+  # Kubernetes NodePort service. It's currently hard coded
+  # with the following spec to expose 6868 as 32068:
+  #
+  # Spec: v1.ServiceSpec{
+  # 	Type: v1.ServiceTypeNodePort,
+  # 	Ports: []v1.ServicePort{{
+  # 		NodePort: 32068,
+  # 		Port:     6868,
+  # 	}},
+  # 	Selector: map[string]string{
+  # 		"bosh.cloudfoundry.org/agent-id": agentID,
+  # 	},
+  # },
+  #
+  # The user and password should match what's used in
+  # properties.agent.mbus but the address needs to be the
+  # address of the kube node. This is temporary.
+  mbus: https://admin:adminpass@192.168.64.7:32068
+
+  # These properties are used to render the CPI job templates
+  properties:
+    agent:
+      # The address used here is the listen address for the
+      # agent. The port needs to match what is used in the
+      # NodePort service. The user and password should match
+      # what is used for cloud_provider.mbus
+      mbus: https://admin:adminpass@0.0.0.0:6868
+    blobstore:
+      provider: local
+      path: /var/vcap/micro_bosh/data/cache
+    kubeconfig: *kubeconfig
+    ntp: *ntp
+
+meta:
+  # This is a non-standard serialization of clientcmdapi.Config
+  kubeconfig: &kubeconfig
+    clusters:
+      minikube:
+        certificate_authority_data: |
+          -----BEGIN CERTIFICATE-----
+          MIIC5zCCAc+gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+          a3ViZUNBMB4XDTE2MTAzMTE3MzIxN1oXDTI2MTAyOTE3MzIxN1owFTETMBEGA1UE
+          AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMWZ
+          x1YkOsk5YSWa8ZlGK0vZ/AZ/F/m/lHJmQP6xJW0w3BYipyYSnqtnlYHnO77cDAIK
+          Xgs6nj3CDwg0SFmqFiPCA7Kbk19J6S4BJVBll+jlaswHheRVxrDeXmjy2yIVR52K
+          gl0pJl9mOi/AFbpYm5uoxZKAByyiWTB87FikMIwfO0D+DIkJzKVsX+vVGFsAHWDL
+          A5mMhk9oAreAQX35kT6Awo1uAj8q/xwuW4r4RfBuZoFV1eCCtosQ8qKCSiDVm0rX
+          h76JJVuL6FpFnNI6rq8ugIW4+/sDf5UXZAAQpJX7UyYJFqIOwQ8Vi/oyLFZikTQf
+          N4FkQAobjK+G9sM3PbsCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgKkMB0GA1UdJQQW
+          MBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+          DQEBCwUAA4IBAQAqxuS85V1j7GnvWKXOaSf8I6bx89FMt5NcQ0z1KqNVC287txle
+          P0LJ09bi/4K8BVIRyQPfve9I3yfkK2V83869f8sGVtQurikDZbDov3Yckaj+HP3F
+          3eEasLKldtly0xFzMWEIWdP1og8nbzGOTmEyihTivnbr1eC3WUVBo4u6WicNfnqq
+          ++4kffKR4DWkLucMl4pyezunbnFFI8XRvGu6FW46I2amHDQ2wBU9jRO7g0SKxU5m
+          tnsX3rDYM+zoP2YZPDXDyO4fubArOtL4K+zNluYS8p3K05CvHnBNP2/E6SgBE0Fp
+          qvk5hK3ela8T82vGrSCpbeJNgJV1008Ky8Oj
+          -----END CERTIFICATE-----
+        server: https://192.168.64.7:8443
+    contexts:
+      minikube:
+        cluster: minikube
+        user: minikube
+        namespace: bosh
+    current_context: minikube
+    users:
+      minikube:
+        client_certificate_data: |
+          -----BEGIN CERTIFICATE-----
+          MIIDWTCCAkGgAwIBAgIBAjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+          a3ViZUNBMB4XDTE3MDEwOTE1MjEwN1oXDTE4MDEwOTE1MjEwN1owEzERMA8GA1UE
+          AxMIbWluaWt1YmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC8c1xa
+          KTsuLNH6VDzRhzqyak5kFs6ERRwqQC8o+4c1fxY11GYsNoGE0mWjzFTV03GEA/u+
+          8bIXZUpaHm3pArPNtexSqq51Jw+cdb0baJaujz2vK9QMB+SwWgaqWf+gup1u+d5b
+          BjuL08JDmXHdE6G9zAJ0fNTOVPjGZKXxOUEGeDhmAELtDMWwBntzNxH+Np0YtpNN
+          CMXVDrh7pjXBjljGvuPIwLjmb5S0qQ1BGXduZkU7SIC1hOPQJh/PUU5LAzRAb8K7
+          dRLbbDUZfCj9AViy5yhLpFvgNwWtw0Mu/JSGVzEIhCd0wEwtONJLFbFgsUnjcX7h
+          BNqjT1XJrCdHj75LAgMBAAGjgbUwgbIwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQW
+          MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMHMGA1UdEQRsMGqC
+          JGt1YmVybmV0ZXMuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbIIWa3ViZXJuZXRl
+          cy5kZWZhdWx0LnN2Y4ISa3ViZXJuZXRlcy5kZWZhdWx0ggprdWJlcm5ldGVzhwTA
+          qEAGhwQKAAABMA0GCSqGSIb3DQEBCwUAA4IBAQAj9fkL4ZD15d9k7BxuGPNWOs7R
+          fDo/yblWu6Ub5XRsoMDITAZPJRzer8CfnLpQsDIDw64vbrVIej3Vc+DyQ5XTulyU
+          VvGHDlpR/iZ3EhLLLZj7lTCJ3usmopqFxtQoLFNaxzzFmYMW0tt8QsqiHq8Ar9MZ
+          PypjiUZ8+i+oa1Thkiqnc6/5UHyVB5Z2jBI3ouPedHbdHmZ9/L6C592oQfs+atWu
+          8IZtf4SB7Ta7307gY6ldldXR74o/uCAgK+l1REVjnnD6N09Cp2s/shHO/rlOxvh/
+          YCDY7MeJoGlu6+nt2CWgZkwNM5yBb/8HQexMzVhi4yFX2cf+xxaMNU8RzVhQ
+          -----END CERTIFICATE-----
+        client_key_data: |
+          -----BEGIN RSA PRIVATE KEY-----
+          MIIEogIBAAKCAQEAvHNcWik7LizR+lQ80Yc6smpOZBbOhEUcKkAvKPuHNX8WNdRm
+          LDaBhNJlo8xU1dNxhAP7vvGyF2VKWh5t6QKzzbXsUqqudScPnHW9G2iWro89ryvU
+          DAfksFoGqln/oLqdbvneWwY7i9PCQ5lx3ROhvcwCdHzUzlT4xmSl8TlBBng4ZgBC
+          7QzFsAZ7czcR/jadGLaTTQjF1Q64e6Y1wY5Yxr7jyMC45m+UtKkNQRl3bmZFO0iA
+          tYTj0CYfz1FOSwM0QG/Cu3US22w1GXwo/QFYsucoS6Rb4DcFrcNDLvyUhlcxCIQn
+          dMBMLTjSSxWxYLFJ43F+4QTao09VyawnR4++SwIDAQABAoIBABc74db73mADBqBm
+          Ylky4vm8QY31geCs5JwQ7b+Pw0vFL2fTmAU7cxx9FCrttkfmmcg89XzFL7/SrSgP
+          OF3SB3kFRO2sPXYUKsiPe5E1g95hqqk+LhaNopRbhRbbobifSWm1RMTUL+M9aGYN
+          NQycrwRHcsYJ3fLSZxmOrybeeDXjxmOKlvLCf9Zwk3BtLM6Oj7sDneoxe49Eyj0x
+          lrxKgq/2MsJCGAhypJCjxqyg5rIw+ibz6lsGShzmVPyXI1J7+TTQBxciMNx1YZQk
+          fb6veAYDVarGqKch4D6miL8qlPv+MAOEQx3tzjGh+/bQxnXg8sYctU/YXqwuOr0F
+          waQbsQECgYEA1pghfE5Yf4uO1ebxKLwHixn6aDrwsXG2A+9yM1fXx3gAbFgzfP3b
+          2DUmHs73qvZnRtsibnTHUNLwIR2tNT3KuOuNKgoYgHHBFctxndbLJJ5JGVL0MMJ8
+          69nuqLaSB5ioroIKKUbECiGjBKDgYfCiwIE8BrGksoghaVhMz9R+IbMCgYEA4M/d
+          78Pq8LHjT1aE27Tlnp5P6LttkZN+bIArRGGQEsAD1HJs+KjfXRdTjh290/mG94jD
+          r29bkuNX5kTGEKLJmbj3AOTGRGNjM0fEBTgK5tp3qyp72I5wXLnDIiWuWQNhE3QX
+          cCtr59RS9vRSzHBUOA0PmDsbxJqEY7jVf7D/tQkCgYBbbKrve61mgX2UEfTyZtFL
+          6QBvAZVj888Y9B2SVD1hBPYhMp6VBM5x2YrpG0IW+y1a2adcqbH09DlL0onlofLJ
+          P8l/fJeduVkKwQchuM4JRspb2KSiVWnFTa7JACdMxzQuTMapeTWyH0yFf0i5UTz1
+          iNma/HnveeHKMM1gyeYG0wKBgAyHCNMHk9v9zbDqHVUw62q/X6yUZTKriWv6aG7T
+          EPg6gvwftDrXDjtdxWYx+hYJ3Z+Fm4H3Lp8s1AUc5/ydVaafTARcuz+sWibNZPr1
+          eIYMvoZnQ6d5qIFCSMFqYCDNs2cmHPg/MzAkAMuKKeMCj27gK3JMOOvnwGDeN+d5
+          sYYhAoGAXAJuiDHS945p4iCz/B7D0q4KTBSvtJh/3cVJpEqYSXmd+rACBjwQ1kqg
+          4EyaxHHXgi6HYM2ZWIp/vnWjLxaUkK6cqXwUpPix+sCh+fCysZa6IJUdKPYD0Zie
+          g6A7hOmJSy2bmQsZgop+A7tRD53jzsQshLTW7slUmVycYNmAPbQ=
+          -----END RSA PRIVATE KEY-----

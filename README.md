@@ -46,7 +46,9 @@ disk's `PersistentVolumeClaim`.
 
 ##### Networks
 
-The Kubernetes CPI only supports dynamic networks at this time.
+Out of the box, the Kubernetes CPI only supports dynamic networks. More
+advanced networking models can be supported if you use [Project Calico][calico].
+
 
 ## Bootstrapping
 
@@ -182,13 +184,8 @@ a way to change the list of volumes and mounts on a running pod, we have to
 recreate the pod to attach disks. When we do that, the IP address of the pod
 changes and then BOSH gets really upset about it.
 
-There's currently an open issue with Kubernetes to support [stable
-IPs][stable-ips] but it still has a ways to go. Until then, we need to find
-some workarounds. The most promising is to use a custom CNI provider that
-simply delegates to [calico][calico] and uses it to assign a pre-allocated IP
-address.  The address would come from BOSH and would be presented as an
-annotation on the pod. The custom CNI provider would simply extract the
-annotation and include it as `IP` in the `CNI_ARGS` passed to calico.
+There's currently an open issue with Kubernetes to support [stable IPs][stable-ips]
+but it still has a ways to go.
 
 [bosh-init]: https://github.com/cloudfoundry/bosh-init
 [calico]: https://www.projectcalico.org/
@@ -198,3 +195,4 @@ annotation and include it as `IP` in the `CNI_ARGS` passed to calico.
 
 [stable-ips]: https://github.com/kubernetes/kubernetes/issues/28969
 [bind-mount-bug]: https://github.com/cloudfoundry/bosh-agent/issues/106
+[calico-cni-ip]: https://github.com/projectcalico/cni-plugin/issues/212

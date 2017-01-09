@@ -1,0 +1,42 @@
+{
+    "director_id": "c57c408f-7f65-4a9e-6ef8-89196db08a00",
+    "installation_id": "66511f08-f6ef-40b8-54de-9799a81e4f09",
+    "current_vm_cid": "minikube:8c591888-46b9-417c-73ea-907241e5af93",
+    "current_stemcell_id": "42b1e6a3-b315-42f6-5f94-60a7272e43c8",
+    "current_disk_id": "b8fe890d-145a-4461-695c-43036ab33e1a",
+    "current_release_ids": [
+        "10354d5d-dca0-49f1-7e30-a9596d236039",
+        "a52137c1-700b-4451-6ace-820a16c196f5"
+    ],
+    "current_manifest_sha1": "d24bb94a4f881699000aac6d0fa7d4fff749986e",
+    "disks": [
+        {
+            "id": "b8fe890d-145a-4461-695c-43036ab33e1a",
+            "cid": "minikube:74b34467-2702-4e66-55d3-a3a4422a76f1",
+            "size": 4000,
+            "cloud_properties": {
+                "context": "minikube"
+            }
+        }
+    ],
+    "stemcells": [
+        {
+            "id": "42b1e6a3-b315-42f6-5f94-60a7272e43c8",
+            "name": "bosh-kubernetes-ubuntu-trusty-go_agent",
+            "version": "3312",
+            "cid": "sykesm/kubernetes-stemcell:3312"
+        }
+    ],
+    "releases": [
+        {
+            "id": "10354d5d-dca0-49f1-7e30-a9596d236039",
+            "name": "bosh",
+            "version": "260"
+        },
+        {
+            "id": "a52137c1-700b-4451-6ace-820a16c196f5",
+            "name": "kubernetes-cpi",
+            "version": "0.0.1-alpha+dev.3"
+        }
+    ]
+}
