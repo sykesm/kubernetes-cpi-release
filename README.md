@@ -30,7 +30,7 @@ An `emptyDir` `Volume` is created to act as the ephemeral disk. The contents
 of the volume are permanently deleted when the pod is deleted or moved to a
 different Kubernetes node.
 
-Pods are named after the BOSH agent it hosts and any Kubernetes objects
+Pods are named after the BOSH agent they host and any Kubernetes objects
 related to the agent are labeled with the agent ID. This allows for easy
 identification and selection.
 
@@ -55,7 +55,7 @@ described in the [issues](#issues) below.
 The Kubernetes network model allocates a unique IP address to each pod that is
 used in the cluster. That means that BOSH _dynamic_ networks are mostly
 supported out of the box. Unfortunately, when a pod terminates or moves to a
-new node, it's IP address can change. This is a problem as BOSH assumes that
+new node, its IP address can change. This is a problem as BOSH assumes that
 the IP address of an agent will not change after it assigned and will no
 longer be able to connect to the agent.
 
@@ -139,8 +139,6 @@ Before starting, please make sure you've installed the `bosh` CLI,
    Logged in as 'admin'
    ```
 
-Once the director is running, you're ready to deploy.
-
 ## Deployments
 
 Once the director is up, it's time to deploy something.
@@ -153,7 +151,7 @@ The manifest templates in [`cf-release`][cf-release] can be used to generate
 the manifest.
 
 1. Review and modify the sample infrastructure template for
-   [kubernetes][templates/cf-infrastructure-kubernetes.yml] where needed. Note
+   [kubernetes](templates/cf-infrastructure-kubernetes.yml) where needed. Note
    that this template is based on what's provided for `bosh-lite`.
 
 2. Generate a Cloud Foundry deployment manifest.
@@ -166,13 +164,14 @@ the manifest.
          <(echo "director_uuid: $(bosh status --uuid)") > cf.yml
    ```
 
-3. If you plan on using DEA's instead of Diego, please see the [issue][#warden] related to
+3. If you plan on using DEA's instead of Diego, please see the [issue](#warden) related to
    `ifb` devices as you will need to apply a patch to warden and create your
    own release.
 
    ```
-   $ cd ~/workspace/cf-release/src/warden
+   $ pushd ~/workspace/cf-release/src/warden
    $ git apply ~/workspace/kubernetes-cpi-release/src/patches/warden-ignore-ifb-errors.diff
+   $ popd
    $ bosh -n create release --force && bosh -n upload release
    ```
 
@@ -281,12 +280,11 @@ the agent to fail during bootstrap.
 For the time being, a [patch](src/patches/mount-rundir-without-mounter.diff)
 is being applied to correct this behavior.
 
-##### Requires Privileged Container
+##### Privileged Container Required
 
-In its current form, the BOSH agent still attempts to run actions in the
-container that require `CAP_SYS_ADMIN`. At some point we need to identify what
-these privileged actions are and whether or not they make sense when
-containerized.
+In its current form, the BOSH agent attempts to run actions in the container
+that require `CAP_SYS_ADMIN`. At some point we need to identify what these
+privileged actions are and whether or not they make sense when containerized.
 
 #### Stable IP Addresses and Disk Management
 
@@ -296,7 +294,8 @@ Here are some facts:
    won't change. This is true regardless of whether it's associated with a
    manual or dynamic network.
 2. BOSH disk managmenent targets **running** _virtual machines_. This seems to
-   based on an assumption that the agent must `mount` the disk on the machine.
+   be based on an assumption that the agent must `mount` the disk on the
+   machine.
 3. Kubernetes does not allow volumes to be added or removed from a pod after
    its creation.
 4. The CPI implements disk management by recreating the pod with the
@@ -309,7 +308,8 @@ recreate the pod to attach disks. When we do that, the IP address of the pod
 changes and then BOSH gets really upset about it.
 
 There's currently an open issue with Kubernetes to support [stable IPs][stable-ips]
-but it still has a ways to go.
+but it still has a ways to go. Until then, _manual_ networks should always be
+used to ensure IP address don't change.
 
 [bosh-init]: https://github.com/cloudfoundry/bosh-init
 [bosh-io]: https://bosh.io/
