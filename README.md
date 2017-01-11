@@ -97,6 +97,9 @@ Before starting, please make sure you've installed the `bosh` CLI,
    $ kubectl apply -f test/calico-wrapper-minikube.yaml
    ```
 
+   After applying this configuration, you'll want to wait for all of the pods
+   in the `kube-system` namespace to be running before proceeding.
+
 4. Generate the manifest for your director. If minikube is your target,
    [scripts/minikube-bootstrap-manifest.sh](scripts/minikube-bootstrap-manifest.sh)
    will generate a manifest with the URLs and credentials from minikube. The

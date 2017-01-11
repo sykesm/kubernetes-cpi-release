@@ -122,7 +122,7 @@ spec:
               name: cni-net-dir
         # This container installs the Calico CNI wrapper binary on each node
         - name: install-cni-wrapper
-          image: sykesm/calico-wrapper:v0.0.1-alpha
+          image: sykesm/calico-wrapper:v0.0.2
           command: ["/install.sh"]
           env:
           volumeMounts:

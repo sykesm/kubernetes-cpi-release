@@ -2,4 +2,6 @@
 builds:
   12ab259e-9025-4983-ad19-c4a730ea5d14:
     version: 0.0.1-alpha
+  33ecd79f-94d0-4739-bbf0-09a660369045:
+    version: 0.0.2
 format-version: '2'
