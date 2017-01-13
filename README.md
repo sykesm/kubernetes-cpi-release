@@ -213,9 +213,80 @@ the manifest.
 
 ### Diego
 
-```
-coming soon
-```
+With your Cloud Foundry deployment up and running, you can now deploy [Diego][diego-release].
+Currently we only support deploying Diego with a Postgres database and
+require a few modifications to the normal deployment workflow.
+
+1. Generate a Diego deployment manifest
+
+   To generate the Diego manifest for Kubernetes you will need to use custom
+   stubs to generate the IAAS settings and set the `garden.apparmor_profile` to
+   the empty string `""`. The provided IAAS settings are for bosh-lite and there
+   is a garden-release [PR][garden-release-pr] which allows you to over write
+   the necessary property.
+
+   ```
+   $ pushd ~/workspace/diego-release
+   $ git fetch origin pull/255/head:kube
+   $ git checkout kube
+   $ mkdir manifests
+
+   $ scripts/generate-deployment-manifest \
+         -c ~/workspace/cf-release/cf.yml \
+         -i ~/workspace/kubernetes-cpi-release/stubs/kubernetes-diego-iaas-settings.yml \
+         -p ~/workspace/kubernetes-cpi-release/stubs/kubernetes-diego-property-overrides.yml \
+         -n manifest-generation/bosh-lite-stubs/instance-count-overrides.yml \
+         -x \
+         -s manifest-generation/bosh-lite-stubs/postgres/diego-sql.yml \
+         -v manifest-generation/bosh-lite-stubs/release-versions.yml \
+         > manifests/diego.yml
+
+   $ spiff merge \
+         manifest-generation/config-from-cf.yml \
+         manifest-generation/config-from-cf-internal.yml \
+         ~/workspace/cf-release/cf.yml \
+         > manifests/config-from-cf.yml
+
+   $ scripts/generate-benchmarks-manifest \
+         -c manifests/diego.yml \
+         -p manifest-generation/benchmark-errand-stubs/default_bosh_lite_benchmark_properties.yml \
+         -i ~/workspace/kubernetes-cpi-release/stubs/kubernetes-diego-iaas-settings.yml \
+         > manifests/diego-benchmarks.yml
+
+   $ scripts/generate-vizzini-manifest \
+         -c ~/workspace/cf-release/cf.yml \
+         -p manifest-generation/bosh-lite-stubs/vizzini-properties.yml \
+         -i ~/workspace/kubernetes-cpi-release/stubs/kubernetes-diego-iaas-settings.yml \
+         > manifests/vizzini.yml
+   $ popd
+   ```
+
+2. Upload the latest cflinuxfs2-rootfs-release
+
+   ```
+   $ bosh upload release https://bosh.io/d/github.com/cloudfoundry/cflinuxfs2-rootfs-release
+   ```
+
+3. Patch the Garden-Runc-Release for Diego
+
+   To deploy Diego, there is a [PR][garden-runc-pr]
+   for the garden-runc-release so that users can opt-out of app armor.
+   See the [Garden issue](#garden) for more information.
+
+   ```
+   $ git fetch origin pull/22/head:kube
+   $ git checkout kube
+   $ bosh create release --force && bosh upload release
+   ```
+
+4. Deploy Diego
+
+   ```
+   $ pushd ~/workspace/diego-release
+   $ bosh -d manifests/diego.yml -n deploy --no-redact
+   $ popd
+   ```
+
 
 ### Minikube Workarounds
 
@@ -325,6 +396,7 @@ used to ensure IP address don't change.
 [bosh-io]: https://bosh.io/
 [calico]: https://www.projectcalico.org/
 [cf-release]: https://github.com/cloudfoundry/cf-release
+[diego-release]: https://github.com/cloudfoundry/diego-release
 [concourse]: https://concourse.ci/
 [diego-release]: https://github.com/cloudfoundry/diego-release
 [garden-runc]: https://github.com/cloudfoundry/garden-runc-release
@@ -339,3 +411,5 @@ used to ensure IP address don't change.
 [garden-apparmor]: https://github.com/cloudfoundry/garden-runc-release/pull/22
 [bosh-mount-rundir-patch]: src/patches/bosh-mount-rundir-without-mounter.diff
 [warden-ifb-patch]: src/patches/warden-ignore-ifb-errors.diff
+[garden-runc-pr]: https://github.com/cloudfoundry/garden-runc-release/pull/22
+[garden-release-pr]: https://github.com/cloudfoundry/diego-release/pull/255
