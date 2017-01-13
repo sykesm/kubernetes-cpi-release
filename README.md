@@ -274,15 +274,18 @@ require a few modifications to the normal deployment workflow.
    See the [Garden issue](#garden) for more information.
 
    ```
+   $ pushd ~/workspace/garden-runc-release
    $ git fetch origin pull/22/head:kube
    $ git checkout kube
    $ bosh create release --force && bosh upload release
+   $ popd ~/workspace/garden-runc-release
    ```
 
 4. Deploy Diego
 
    ```
    $ pushd ~/workspace/diego-release
+   $ bosh create release --force && bosh upload release
    $ bosh -d manifests/diego.yml -n deploy --no-redact
    $ popd
    ```
