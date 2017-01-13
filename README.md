@@ -139,6 +139,8 @@ Before starting, please make sure you've installed the `bosh` CLI,
    Logged in as 'admin'
    ```
 
+[![asciicast](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
+
 ## Deployments
 
 Once the director is up, it's time to deploy something.
