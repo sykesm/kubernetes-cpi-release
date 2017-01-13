@@ -80,7 +80,7 @@ Before starting, please make sure you've installed the `bosh` CLI,
 [`bosh-init`][bosh-init], `kubectl` (the Kubernetes CLI), [`jq`][jq] and
 [`minikube`][minikube]. Most of these are available in homebrew.
 
-[![asciicast](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
+[![asciicast-bosh](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
 
 1. Start `minikube`. You want to make sure that you've configured it with an
    appropriate amount of disk and memory and that you've enabled CNI for
@@ -152,7 +152,7 @@ with the Kubernetes CPI is similar to deploying Cloud Foundry anywhere else.
 The manifest templates in [`cf-release`][cf-release] can be used to generate
 the manifest.
 
-[![asciicast](https://asciinema.org/a/99185.png)](https://asciinema.org/a/99185)
+[![asciicast-cf](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
 
 1. Review and modify the sample infrastructure template for
    [kubernetes](templates/cf-infrastructure-kubernetes.yml) where needed. Note
