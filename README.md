@@ -80,6 +80,8 @@ Before starting, please make sure you've installed the `bosh` CLI,
 [`bosh-init`][bosh-init], `kubectl` (the Kubernetes CLI), [`jq`][jq] and
 [`minikube`][minikube]. Most of these are available in homebrew.
 
+[![asciicast](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
+
 1. Start `minikube`. You want to make sure that you've configured it with an
    appropriate amount of disk and memory and that you've enabled CNI for
    networking.
@@ -139,8 +141,6 @@ Before starting, please make sure you've installed the `bosh` CLI,
    Logged in as 'admin'
    ```
 
-[![asciicast](https://asciinema.org/a/99180.png)](https://asciinema.org/a/99180)
-
 ## Deployments
 
 Once the director is up, it's time to deploy something.
@@ -151,6 +151,8 @@ If your Kubernetes cluster uses Calico for networking, deploying Cloud Foundry
 with the Kubernetes CPI is similar to deploying Cloud Foundry anywhere else.
 The manifest templates in [`cf-release`][cf-release] can be used to generate
 the manifest.
+
+[![asciicast](https://asciinema.org/a/99185.png)](https://asciinema.org/a/99185)
 
 1. Review and modify the sample infrastructure template for
    [kubernetes](templates/cf-infrastructure-kubernetes.yml) where needed. Note
@@ -184,13 +186,19 @@ the manifest.
    $ bosh upload release https://bosh.io/d/github.com/cloudfoundry/cf-release
    ```
 
-4. Deploy Cloud Foundry. This can take 20 minutes or more to complete.
+4. Upload Kubernetes Stemcell
+
+   ```
+   $ bosh upload stemcell https://github.com/sykesm/kubernetes-cpi-release/releases/download/v0.0.2/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
+   ```
+
+5. Deploy Cloud Foundry. This can take 20 minutes or more to complete.
 
    ```
    $ bosh -d cf.yml -n deploy --no-redact
    ```
 
-5. Once Cloud Foundry has been deployed, the `cf` CLI can be used to login and
+6. Once Cloud Foundry has been deployed, the `cf` CLI can be used to login and
    push applications. You want to make sure you do this from a box that has
    network connectivity to Cloud Controller you just deployed. One way to do
    this is to run a shell in a Kubernetes pod.
