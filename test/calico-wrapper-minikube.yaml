@@ -31,15 +31,27 @@ data:
   # The default IP Pool to be created for the cluster.
   # Pod IP addresses will be assigned from this pool.
   ippool.yaml: |
+    apiVersion: v1
+    kind: ipPoolList
+    items:
+    - kind: ipPool
       apiVersion: v1
-      kind: ipPool
       metadata:
-        cidr: 10.244.0.0/16
+        cidr: 10.244.0.0/17
       spec:
+        disabled: false
         ipip:
           enabled: false
         nat-outgoing: true
-
+    - kind: ipPool
+      apiVersion: v1
+      metadata:
+        cidr: 10.244.128.0/17
+      spec:
+        disabled: false
+        ipip:
+          enabled: false
+        nat-outgoing: true
 ---
 # This manifest installs the calico/node container, as well as the Calico CNI
 # plugins and network config on each master and worker node in a Kubernetes

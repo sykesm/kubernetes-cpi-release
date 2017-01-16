@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CPI_VERSION=${CPI_VERSION:-0.0.2}
+
 DIRECTOR_NODEPORT=${1:-32067}
 AGENT_NODEPORT=${2:-32068}
 
@@ -28,14 +30,14 @@ releases:
   url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=260
   sha1: f8f086974d9769263078fb6cb7927655744dacbc
 - name: kubernetes-cpi
-  url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v0.0.2/kubernetes-cpi-0.0.2.tgz
+  url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v${CPI_VERSION}/kubernetes-cpi-0.0.2.tgz
   sha1: 9bedfcafa8889bbd7518dcfec63876dc592ed837
 
 resource_pools:
 - name: minikube-director
   network: default
   stemcell:
-    url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v0.0.1-alpha/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
+    url: https://github.com/sykesm/kubernetes-cpi-release/releases/download/v${CPI_VERSION}/bosh-stemcell-3312-kubernetes-ubuntu-trusty-go_agent.tgz
     sha1: a10b75a622f86a4ed68c6094e3df9a825d97be4f
   cloud_properties:
     context: minikube
